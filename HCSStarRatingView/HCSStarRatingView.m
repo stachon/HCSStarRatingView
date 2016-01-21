@@ -174,7 +174,8 @@
 
 - (void)_drawStarImageWithFrame:(CGRect)frame tintColor:(UIColor*)tintColor highlighted:(BOOL)highlighted {
     UIImage *image = highlighted ? self.filledStarImage : self.emptyStarImage;
-    [self _drawImage:image frame:frame tintColor:tintColor];
+    [image drawInRect:CGRectMake((frame.size.width/2) - (image.size.width/2), (frame.size.height / 2) - (image.size.height / 2), image.size.width, image.size.height)];
+    //[self _drawImage:image frame:frame tintColor:tintColor];
 }
 
 - (void)_drawHalfStarImageWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor {
