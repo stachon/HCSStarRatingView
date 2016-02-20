@@ -70,6 +70,7 @@
     _value = 0;
     _spacing = 5.f;
     _continuous = YES;
+    _allowsSwipe = YES;
 }
 
 - (void)setNeedsLayout {
@@ -178,7 +179,7 @@
       [tintColor setFill];
     }
     [image drawInRect:CGRectMake(frame.origin.x + (frame.size.width/2) - (image.size.width/2), frame.origin.y + (frame.size.height / 2) - (image.size.height / 2), image.size.width, image.size.height)];
-  
+
     //[self _drawImage:image frame:frame tintColor:tintColor];
 }
 
@@ -191,7 +192,7 @@
     if (image == nil) {
         // first draw star outline
         [self _drawStarImageWithFrame:frame tintColor:tintColor highlighted:NO];
-        
+
         image = self.filledStarImage;
         CGRect imageFrame = CGRectMake(0, 0, image.size.width * image.scale * progress, image.size.height * image.scale);
         frame.size.width *= progress;
@@ -235,20 +236,20 @@
     [starShapePath addLineToPoint: CGPointMake(CGRectGetMinX(frame) + 0.62723 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.37309 * CGRectGetHeight(frame))];
     [starShapePath closePath];
     starShapePath.miterLimit = 4;
-    
+
     CGFloat frameWidth = frame.size.width;
     CGRect rightRectOfStar = CGRectMake(frame.origin.x + progress * frameWidth, frame.origin.y, frameWidth - progress * frameWidth, frame.size.height);
     UIBezierPath *clipPath = [UIBezierPath bezierPathWithRect:CGRectInfinite];
     [clipPath appendPath:[UIBezierPath bezierPathWithRect:rightRectOfStar]];
     clipPath.usesEvenOddFillRule = YES;
-    
+
     CGContextSaveGState(UIGraphicsGetCurrentContext()); {
         [clipPath addClip];
         [tintColor setFill];
         [starShapePath fill];
     }
     CGContextRestoreGState(UIGraphicsGetCurrentContext());
-    
+
     [tintColor setStroke];
     starShapePath.lineWidth = 1;
     [starShapePath stroke];
@@ -260,7 +261,7 @@
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, self.backgroundColor.CGColor);
     CGContextFillRect(context, rect);
-    
+
     CGFloat availableWidth = rect.size.width - (_spacing * (_maximumValue - 1)) - 2;
     CGFloat cellWidth = (availableWidth / _maximumValue);
     CGFloat starSide = (cellWidth <= rect.size.height) ? cellWidth : rect.size.height;
@@ -321,7 +322,9 @@
 - (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
     if (self.isEnabled) {
         [super continueTrackingWithTouch:touch withEvent:event];
-        [self _handleTouch:touch];
+        if (self.allowsSwipe) {
+            [self _handleTouch:touch];
+        }
         return YES;
     } else {
         return NO;
