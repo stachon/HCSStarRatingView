@@ -39,14 +39,6 @@
 
 #pragma mark - Initialization
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        [self _customInit];
-    }
-    return self;
-}
-
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
@@ -71,6 +63,7 @@
     _spacing = 5.f;
     _continuous = YES;
     _allowsSwipe = YES;
+    [self _updateAppearanceForState:self.enabled];
 }
 
 - (void)setNeedsLayout {
@@ -120,11 +113,13 @@
 }
 
 - (void)setValue:(CGFloat)value sendValueChangedAction:(BOOL)sendAction {
+    [self willChangeValueForKey:NSStringFromSelector(@selector(value))];
     if (_value != value && value >= _minimumValue && value <= _maximumValue) {
         _value = value;
         if (sendAction) [self sendActionsForControlEvents:UIControlEventValueChanged];
         [self setNeedsDisplay];
     }
+    [self didChangeValueForKey:NSStringFromSelector(@selector(value))];
 }
 
 - (void)setSpacing:(CGFloat)spacing {
@@ -171,6 +166,19 @@
     return (self.emptyStarImage!=nil && self.filledStarImage!=nil);
 }
 
+#pragma mark - State
+
+- (void)setEnabled:(BOOL)enabled
+{
+    [self _updateAppearanceForState:enabled];
+    [super setEnabled:enabled];
+}
+
+- (void)_updateAppearanceForState:(BOOL)enabled
+{
+    self.alpha = enabled ? 1.f : .5f;
+}
+
 #pragma mark - Image Drawing
 
 - (void)_drawStarImageWithFrame:(CGRect)frame tintColor:(UIColor*)tintColor highlighted:(BOOL)highlighted {
@@ -192,7 +200,7 @@
     if (image == nil) {
         // first draw star outline
         [self _drawStarImageWithFrame:frame tintColor:tintColor highlighted:NO];
-
+        
         image = self.filledStarImage;
         CGRect imageFrame = CGRectMake(0, 0, image.size.width * image.scale * progress, image.size.height * image.scale);
         frame.size.width *= progress;
@@ -236,20 +244,20 @@
     [starShapePath addLineToPoint: CGPointMake(CGRectGetMinX(frame) + 0.62723 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.37309 * CGRectGetHeight(frame))];
     [starShapePath closePath];
     starShapePath.miterLimit = 4;
-
+    
     CGFloat frameWidth = frame.size.width;
     CGRect rightRectOfStar = CGRectMake(frame.origin.x + progress * frameWidth, frame.origin.y, frameWidth - progress * frameWidth, frame.size.height);
     UIBezierPath *clipPath = [UIBezierPath bezierPathWithRect:CGRectInfinite];
     [clipPath appendPath:[UIBezierPath bezierPathWithRect:rightRectOfStar]];
     clipPath.usesEvenOddFillRule = YES;
-
+    
     CGContextSaveGState(UIGraphicsGetCurrentContext()); {
         [clipPath addClip];
         [tintColor setFill];
         [starShapePath fill];
     }
     CGContextRestoreGState(UIGraphicsGetCurrentContext());
-
+    
     [tintColor setStroke];
     starShapePath.lineWidth = 1;
     [starShapePath stroke];
@@ -261,7 +269,7 @@
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, self.backgroundColor.CGColor);
     CGContextFillRect(context, rect);
-
+    
     CGFloat availableWidth = rect.size.width - (_spacing * (_maximumValue - 1)) - 2;
     CGFloat cellWidth = (availableWidth / _maximumValue);
     CGFloat starSide = (cellWidth <= rect.size.height) ? cellWidth : rect.size.height;
@@ -413,11 +421,13 @@
 }
 
 - (void)accessibilityIncrement {
-    self.value += self.allowsHalfStars ? .5f : 1.f;
+    CGFloat value = self.value + (self.allowsHalfStars ? .5f : 1.f);
+    [self setValue:value sendValueChangedAction:YES];
 }
 
 - (void)accessibilityDecrement {
-    self.value -= self.allowsHalfStars ? .5f : 1.f;
+    CGFloat value = self.value - (self.allowsHalfStars ? .5f : 1.f);
+    [self setValue:value sendValueChangedAction:YES];
 }
 
 @end
