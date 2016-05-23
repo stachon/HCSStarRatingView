@@ -24,7 +24,6 @@
 
 @interface HCSStarRatingView ()
 @property (nonatomic, readonly) BOOL shouldUseImages;
-@property NSMutableArray* verticalOffsets;
 @end
 
 @implementation HCSStarRatingView {
@@ -276,8 +275,8 @@
     CGFloat starSide = (cellWidth <= rect.size.height) ? cellWidth : rect.size.height;
     for (int idx = 0; idx < _maximumValue; idx++) {
         int yOffset = 0;
-        if (verticalOffsets != nil) {
-            yOffset = verticalOffsets[idx];
+        if (self.verticalOffsets != nil) {
+            yOffset = self.verticalOffsets[idx];
         }
         CGPoint center = CGPointMake(cellWidth*idx + cellWidth/2 + _spacing*idx + 1, rect.size.height/2);
         CGRect frame = CGRectMake(center.x - starSide/2, center.y - starSide/2 + yOffset, starSide, starSide);
